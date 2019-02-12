@@ -86,17 +86,20 @@ module.exports = (robot) ->
   # Spotify Web API Functions
 
   addTrack = (res) ->
-    res.http("https://api.spotify.com/v1/users/" + process.env.SPOTIFY_USER_ID + "/playlists/" + process.env.SPOTIFY_PLAYLIST_ID + "/tracks?uris=spotify%3Atrack%3A" + res.match[1])
+    data = JSON.stringify({
+      uris: ["spotify:track:"+res.match[1]]
+    })
+    res.http("https://api.spotify.com/v1/playlists/" + process.env.SPOTIFY_PLAYLIST_ID + "/tracks")
       .header("Authorization", "Bearer " + robot.brain.get('access_token'))
       .header('Content-Type', 'application/json')
       .header('Accept', 'application/json')
-      .post() (err, resp, body) =>
+      .post(data) (err, resp, body) =>
         response = JSON.parse(body)
         if response.snapshot_id
           res.send "Track added"
 
   findAndAddFirstTrack = (res, token) ->
-    res.http("https://api.spotify.com/v1/search?q=" + res.match[1] + "&type=track&market=US&limit=1")
+    res.http("https://api.spotify.com/v1/search?q=" + res.match[1] + "&type=track&market=DK&limit=1")
       .header("Authorization", "Bearer " + token)
       .header('Accept', 'application/json')
       .get() (err, resp, body) =>
@@ -111,7 +114,7 @@ module.exports = (robot) ->
         uri : "spotify:track:" + res.match[1]
       ]
     })
-    res.http("https://api.spotify.com/v1/users/" + process.env.SPOTIFY_USER_ID + "/playlists/" + process.env.SPOTIFY_PLAYLIST_ID + "/tracks")
+    res.http("https://api.spotify.com/v1/playlists/" + process.env.SPOTIFY_PLAYLIST_ID + "/tracks")
       .header("Authorization", "Bearer " + robot.brain.get('access_token'))
       .header('Content-Type', 'application/json')
       .delete(data) (err, resp, body) =>
