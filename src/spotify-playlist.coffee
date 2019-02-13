@@ -52,8 +52,8 @@ module.exports = (robot) ->
       .header('Content-Type', 'application/x-www-form-urlencoded')
       .post(data) (err, resp, body) =>
         response = JSON.parse(body)
-        if response.error
-          res.send "An error occured, " + response.error_description
+        if err
+          res.send "Encountered an error :( #{err}"
         robot.brain.set 'access_token', response.access_token
         robot.brain.set 'refresh_token', response.refresh_token
         robot.brain.set 'expires', (new Date().getTime() + (response.expires_in * 1000))
