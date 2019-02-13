@@ -67,6 +67,9 @@ module.exports = (robot) ->
       .header("Authorization", "Basic " + encodedAppId)
       .header('Content-Type', 'application/x-www-form-urlencoded')
       .post(data) (err, resp, body) =>
+        if err
+          res.send "Encountered an error :( #{err}"
+          return
         response = JSON.parse(body)
         if response.refresh_token
           robot.brain.set 'refresh_token', response.refresh_token
@@ -94,19 +97,12 @@ module.exports = (robot) ->
       .header('Content-Type', 'application/json')
       .header('Accept', 'application/json')
       .post(data) (err, resp, body) =>
+        if err
+          res.send "Encountered an error :( #{err}"
+          return
         response = JSON.parse(body)
         if response.snapshot_id
           res.send "Track added"
-
-  findAndAddFirstTrack = (res, token) ->
-    res.http("https://api.spotify.com/v1/search?q=" + res.match[1] + "&type=track&market=DK&limit=1")
-      .header("Authorization", "Bearer " + token)
-      .header('Accept', 'application/json')
-      .get() (err, resp, body) =>
-        response = JSON.parse body
-        for item in response.tracks.items
-          res.match[1] = item.id
-        authorizeAppUser(res, addTrack)
 
   removeTrack = (res) ->
     data = JSON.stringify({
@@ -118,6 +114,9 @@ module.exports = (robot) ->
       .header("Authorization", "Bearer " + robot.brain.get('access_token'))
       .header('Content-Type', 'application/json')
       .delete(data) (err, resp, body) =>
+        if err
+          res.send "Encountered an error :( #{err}"
+          return
         response = JSON.parse(body)
         if response.snapshot_id
           res.send "Track removed"
@@ -134,10 +133,8 @@ module.exports = (robot) ->
         res.send string
 
   robot.respond /playlist add (.*)/i, (res) ->
-    authorizeAppUser(res, findAndAddFirstTrack)
-
-  robot.respond /playlist addid (.*)/i, (res) ->
     authorizeAppUser(res, addTrack)
+
 
   robot.respond /playlist remove (.*)/i, (res) ->
     authorizeAppUser(res, removeTrack)
